@@ -30,5 +30,9 @@ class MainApp(tk.Frame):
         self.text_box.grid(row=1, column=0, columnspan=5, pady=7, padx=10)
 
         # Add an entry for the user to type into
-        self.text_entry = tk.Entry(self, width=30, font=("Courier", 20, "bold"), bg=CH_BEIGE, fg=CH_BLUE)
+        self.text_entry = tk.Entry(self, width=30, font=("Courier", 20, "bold"), bg=CH_WHITE, fg=CH_BLUE)
         self.text_entry.grid(row=2, column=0, columnspan=5, pady=10)
+
+        # Add button to change the text prompt
+        self.change_prompt_button = tk.Button(self, fg=CH_BLUE, bg=CH_BEIGE, text="Change Prompt", highlightthickness=0)
+        self.change_prompt_button.grid(row=3, column=2, pady=5)

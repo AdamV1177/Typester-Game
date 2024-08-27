@@ -19,7 +19,7 @@ def main():
     gen = MarkovTextGenerator()
 
     # Create a new game in the main window
-    game = Game(main_window, gen)
+    Game(main_window, gen)
 
     root.mainloop()
 

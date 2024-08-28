@@ -3,37 +3,56 @@ from tkinter import END
 from user_interface import CH_BLUE
 from pynput.keyboard import Key
 
+# CONSTANTS
+COUNTDOWN_LEN_S = 60
+
 
 class Game:
     """
     Class taking care of the game functionality.
-    - Adding new prompts to type with essential_generators package.
+    - Adding new prompts to type with wonderwords package.
+    - Handling keypresses and giving feedback to the user through text coloring.
     """
     def __init__(self, frame, gen):
         self.frame = frame
         self.gen = gen
 
-        # Find the 2 text widgets in the frame
-        self.text_widgets = []
+        # Find the widgets in the frame to assign
+        text_widgets = []
+        buttons = []
+        labels = []
         for widget in self.frame.winfo_children():
             if isinstance(widget, tk.Text):
-                self.text_widgets.append(widget)
+                text_widgets.append(widget)
+            elif isinstance(widget, tk.Button):
+                buttons.append(widget)
+            elif isinstance(widget, tk.Label):
+                labels.append(widget)
 
         # Save the respective text widgets
-        self.prompt_box = self.text_widgets[0]
-        self.input_box = self.text_widgets[1]
+        self.prompt_box = text_widgets[0]
+        self.input_box = text_widgets[1]
+
+        # Save the respective buttons
+        self.change_prompt_button = buttons[0]
+        self.start_button = buttons[1]
+
+        # Save the label
+        self.countdown_label = labels[1]
 
         self.generate_text()
-        self.assign_command()
+        self.assign_commands()
 
-    def assign_command(self):
+        # Create variable for timer
+        self.timer = ""
+
+    def assign_commands(self):
         """
-        Assign the generate_text method to the Change prompt button, since I don't have
+        Assign the methods to their respective buttons, since I don't have
         a reference to the Game class in the MainApp class and can't do it there.
         """
-        for widget in self.frame.winfo_children():
-            if isinstance(widget, tk.Button):
-                widget.configure(command=self.generate_text)
+        self.change_prompt_button.configure(command=self.generate_text)
+        self.start_button.configure(command=self.countdown)
 
     def generate_text(self):
         """
@@ -86,3 +105,16 @@ class Game:
         # Generate new sentence after the current one is finished
         if len(entry_content) == len(prompt_content):
             self.generate_text()
+
+    def countdown(self, count=COUNTDOWN_LEN_S):
+        if count >= 10:
+            self.countdown_label.configure(text=f"{count}")
+        else:
+            self.countdown_label.configure(text=f"0{count}")
+
+        if count > 0:
+            self.timer = self.frame.after(1000, self.countdown, count - 1)
+        else:
+            self.frame.after_cancel(self.timer)
+            # TODO: implement function to call after the countdown ends (display results of the game/round)
+            print("Game end.")

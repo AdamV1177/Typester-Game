@@ -1,6 +1,5 @@
-# TODO: Add buttons to access the leaderboards and back
 import tkinter as tk
-from user_interface import MainApp
+from user_interface import MainApp, Leaderboard
 from game_manager import Game
 from wonderwords import RandomSentence
 from pynput import keyboard
@@ -13,15 +12,15 @@ def main():
     root.title("Typester")
     root.resizable(False, False)
 
-    # Create the main window UI
+    # Create the main window UI and the leaderboard UI
     main_window = MainApp(root)
-    main_window.pack(expand=True)
+    leaderboard = Leaderboard(root)
 
     # Create text generator object
     gen = RandomSentence()
 
     # Create a new game in the main window
-    game = Game(main_window, gen)
+    game = Game(main_window, gen, leaderboard)
 
     # Create listener for keyboard input
     listener = keyboard.Listener(on_press=game.key_press)

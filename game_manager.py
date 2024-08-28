@@ -15,12 +15,16 @@ class Game:
     Class taking care of the game functionality.
     - Adding new prompts to type with wonderwords package.
     - Handling keypresses and giving feedback to the user through text coloring.
+    - Controlling the countdown
+    - Starting/Ending rounds
+    - Saving scores into scoreboard
     """
-    def __init__(self, frame, gen):
+    def __init__(self, frame, gen, leaderboard):
         self.frame = frame
         self.gen = gen
         self.character_count = 0
         self.mistakes = 0
+        self.leaderboard = leaderboard
 
         # Find the widgets in the frame to assign
         text_widgets = []
@@ -166,6 +170,8 @@ class Game:
         self.input_box.delete("1.0", END)
         self.character_count = 0
         self.mistakes = 0
+        self.countdown_label.configure(text="90")
+        self.start_button.configure(text='Start Timer', command=self.countdown)
 
     def stop_round(self):
         """
@@ -174,14 +180,16 @@ class Game:
         """
         self.reset()
         self.frame.after_cancel(self.timer)
-        self.countdown_label.configure(text="90")
-        self.start_button.configure(text='Start Timer', command=self.countdown)
 
     def save_result(self):
 
         # Count characters per minute and mistake ratio
         cpm = round(self.character_count/(COUNTDOWN_LEN_S/60), 1)
-        mistake_ratio = int(round(1 / (self.mistakes/self.character_count), 0))
+
+        if self.mistakes != 0:
+            mistake_ratio = int(round(1 / (self.mistakes/self.character_count), 0))
+        else:
+            mistake_ratio = "N/A"
 
         # Ask user if they want to save the score
         response = askyesno("Save Score",
@@ -194,26 +202,39 @@ class Game:
         # If user wants to save score
         if response:
 
-            # Create dictionary with the new score to add
+            # Read json with scores list
+            try:
+                with open('scoreboard.json') as json_file:
+                    data = json.load(json_file)
+                    scores_list = data['scores']
+
+            # Create file if not found
+            except FileNotFoundError:
+                open("scoreboard.json", "x")
+                scores_list = []
+
+            # Create scores list if file exists but is empty and continue
+            except json.decoder.JSONDecodeError:
+                scores_list = []
+
+            # Append new score to the list
             new_score = {
                 "date": datetime.datetime.now().strftime("%d/%m/%Y"),
                 "cpm": cpm,
                 "mistakes": self.mistakes,
                 "MR": mistake_ratio
             }
+            scores_list.append(new_score)
 
-            # Write into a json file (handle missing or empty file errors)
-            try:
-                with open("scoreboard.json", "r") as file:
-                    data = json.load(file)
-            except FileNotFoundError:
-                with open("scoreboard.json", "w") as file:
-                    json.dump(new_score, file, indent=4)
-            except json.decoder.JSONDecodeError:
-                with open("scoreboard.json", "w") as file:
-                    json.dump(new_score, file, indent=4)
-            else:
-                data.update(new_score)
+            # Create dictionary to write into the json
+            new_json = {
+                "scores": scores_list
+            }
 
-                with open("scoreboard.json", "w") as file:
-                    json.dump(data, file, indent=4)
+            # Write new json into the scoreboards file
+            with open("scoreboard.json", "w") as file:
+                json.dump(new_json, file, indent=4)
+
+            # Update the scoreboard in the leaderboard object (JSON only gets read when initialized)
+            # After a new score is added, need to read the JSON again
+            self.leaderboard.update_scoreboard()

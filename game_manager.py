@@ -7,7 +7,7 @@ import datetime
 from tkinter.messagebox import askyesno
 
 # CONSTANTS
-COUNTDOWN_LEN_S = 5
+COUNTDOWN_LEN_S = 90
 
 
 class Game:

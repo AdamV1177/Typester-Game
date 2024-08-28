@@ -4,7 +4,7 @@ from user_interface import CH_BLUE
 from pynput.keyboard import Key
 
 # CONSTANTS
-COUNTDOWN_LEN_S = 60
+COUNTDOWN_LEN_S = 90
 
 
 class Game:
@@ -16,6 +16,8 @@ class Game:
     def __init__(self, frame, gen):
         self.frame = frame
         self.gen = gen
+        self.character_count = 0
+        self.mistakes = 0
 
         # Find the widgets in the frame to assign
         text_widgets = []
@@ -92,7 +94,6 @@ class Game:
         # tag_counter, to create unique tags
         tag_counter = 0
         for i in range(len(entry_content)-1):
-
             self.prompt_box.tag_add(f"start{tag_counter}", f"1.{i}", f"1.{i+1}")
 
             if prompt_content[i] == entry_content[i]:
@@ -104,9 +105,24 @@ class Game:
 
         # Generate new sentence after the current one is finished
         if len(entry_content) == len(prompt_content):
+            self.character_count += len(prompt_content)-1
+            self.count_mistakes(entry_content, prompt_content)
             self.generate_text()
 
     def countdown(self, count=COUNTDOWN_LEN_S):
+        """
+        Function taking care of the countdown.
+        Recursively called until countdown is at 0.
+        """
+        # If the countdown has just started, delete the current contents
+        # of the textboxes and reset score.
+        if count == COUNTDOWN_LEN_S:
+            self.generate_text()
+            self.input_box.delete("1.0", END)
+            self.character_count = 0
+            self.mistakes = 0
+
+        # Add leading zero to single digits
         if count >= 10:
             self.countdown_label.configure(text=f"{count}")
         else:
@@ -116,5 +132,21 @@ class Game:
             self.timer = self.frame.after(1000, self.countdown, count - 1)
         else:
             self.frame.after_cancel(self.timer)
-            # TODO: implement function to call after the countdown ends (display results of the game/round)
-            print("Game end.")
+            self.game_end()
+
+    def game_end(self):
+        """
+        Function called when the countdown has run out.
+        Shows the game results and leaderboard.
+        """
+        # Count the characters and mistakes in the last unfinished sentence
+        self.character_count += len(self.input_box.get("1.0", END)) - 1
+        self.count_mistakes(self.input_box.get("1.0", END).strip(), self.prompt_box.get("1.0", END).strip())
+
+    def count_mistakes(self, entry, prompt):
+        """
+        Counts mistakes by comparing entry to prompt character by character.
+        """
+        for i in range(len(entry)):
+            if entry[i] != prompt[i]:
+                self.mistakes += 1

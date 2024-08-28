@@ -44,5 +44,5 @@ class MainApp(tk.Frame):
         self.timer_label.grid(row=2, column=4)
 
         # Add start button
-        self.start_button = tk.Button(self, fg=CH_BLUE, bg=CH_BEIGE, text="Start Timer", highlightthickness=0)
+        self.start_button = tk.Button(self, fg=CH_BEIGE, bg=CH_BLUE, text="Start Timer", highlightthickness=0)
         self.start_button.grid(row=3, column=2, pady=5)

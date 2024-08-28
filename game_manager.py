@@ -7,7 +7,7 @@ import datetime
 from tkinter.messagebox import askyesno
 
 # CONSTANTS
-COUNTDOWN_LEN_S = 90
+COUNTDOWN_LEN_S = 5
 
 
 class Game:
@@ -184,7 +184,7 @@ class Game:
     def save_result(self):
 
         # Count characters per minute and mistake ratio
-        cpm = round(self.character_count/(COUNTDOWN_LEN_S/60), 1)
+        cpm = int(round(self.character_count/(COUNTDOWN_LEN_S/60), 1))
 
         if self.mistakes != 0:
             mistake_ratio = int(round(1 / (self.mistakes/self.character_count), 0))

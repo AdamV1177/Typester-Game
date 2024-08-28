@@ -1,4 +1,6 @@
 import tkinter as tk
+import json
+import operator
 
 # CONSTANTS
 # Colors from ColorHunt
@@ -86,10 +88,11 @@ class Leaderboard(tk.Frame):
         self.title.grid(row=0, column=0, columnspan=3, padx=10, pady=5)
 
         # Add label with scores
-        self.title = tk.Label(self, text="No scores yet.",
-                              fg=CH_BLUE, bg=CH_BROWN,
-                              font=("Courier", 15, "bold"))
-        self.title.grid(row=1, column=0, columnspan=3, padx=10, pady=5)
+        self.scores = tk.Label(self, text="No scores yet.",
+                               fg=CH_BLUE, bg=CH_BROWN,
+                               font=("Courier", 15, "bold"))
+        self.scores.grid(row=1, column=0, columnspan=3, padx=10, pady=5)
+        self.update_scoreboard()
 
         # Add button to return to game
         self.back_button = tk.Button(self, fg=CH_BLUE, bg=CH_BEIGE,
@@ -111,6 +114,32 @@ class Leaderboard(tk.Frame):
 
     def update_scoreboard(self):
         """
-        Adds the new score to the leaderboard object.
+        Updates the text in the leaderboard frame.
         """
-        pass
+        # Open the json file with scores
+        scores_list = []
+        try:
+            with open("scoreboard.json", "r") as json_file:
+                data = json.load(json_file)
+                scores_list = data['scores']
+        except FileNotFoundError:
+            pass
+        except json.decoder.JSONDecodeError:
+            pass
+
+        # Create string with scores
+        scores_string = "No scores yet."
+        if scores_list:
+            # Sort the list by CPM
+            scores_list.sort(key=operator.itemgetter('cpm'), reverse=True)
+
+            scores_string = ""
+            rank = 1
+
+            # Get only top ten from list
+            top_10 = scores_list[0:10]
+            for score_dict in top_10:
+                scores_string = scores_string + f"{rank}. {score_dict['cpm']} cpm | {score_dict['MR']} MR\n"
+                rank += 1
+
+        self.scores.configure(text=scores_string)

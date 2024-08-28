@@ -24,13 +24,14 @@ class MainApp(tk.Frame):
         self.welcome_label.grid(row=0, column=1, columnspan=3, padx=10, pady=5)
 
         # Add the main text box for the to-be-typed text
-        self.text_box = tk.Text(self, font=("Courier", 14, "normal"),
-                                fg=CH_BLUE, bg=CH_BEIGE, width=50, height=8,
+        self.text_box = tk.Text(self, font=("Courier", 20, "normal"),
+                                fg=CH_BLUE, bg=CH_BEIGE, width=50, height=3,
                                 state='disabled', pady=5, padx=5, wrap='word')
         self.text_box.grid(row=1, column=0, columnspan=5, pady=7, padx=10)
 
-        # Add an entry for the user to type into
-        self.text_entry = tk.Entry(self, width=30, font=("Courier", 20, "bold"), bg=CH_WHITE, fg=CH_BLUE)
+        # Add a textbox for the user to type into
+        self.text_entry = tk.Text(self, width=50, font=("Courier", 15, "bold"),
+                                  bg=CH_WHITE, fg=CH_BLUE, height=2, wrap='word')
         self.text_entry.grid(row=2, column=0, columnspan=5, pady=10)
 
         # Add button to change the text prompt

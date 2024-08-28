@@ -1,7 +1,8 @@
 import tkinter as tk
 from user_interface import MainApp
 from game_manager import Game
-from essential_generators import MarkovTextGenerator
+from wonderwords import RandomSentence
+from pynput import keyboard
 
 
 def main():
@@ -16,10 +17,14 @@ def main():
     main_window.pack(expand=True)
 
     # Create text generator object
-    gen = MarkovTextGenerator()
+    gen = RandomSentence()
 
     # Create a new game in the main window
-    Game(main_window, gen)
+    game = Game(main_window, gen)
+
+    # Create listener for keyboard input
+    listener = keyboard.Listener(on_press=game.key_press)
+    listener.start()
 
     root.mainloop()
 

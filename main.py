@@ -1,3 +1,4 @@
+# TODO: Add buttons to access the leaderboards and back
 import tkinter as tk
 from user_interface import MainApp
 from game_manager import Game

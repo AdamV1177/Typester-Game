@@ -40,7 +40,7 @@ class MainApp(tk.Frame):
         self.change_prompt_button.grid(row=3, column=1, pady=5)
 
         # Add timer label
-        self.timer_label = tk.Label(self, fg=CH_BLUE, bg=CH_BROWN, text="60", font=("Arial", 40, "bold"))
+        self.timer_label = tk.Label(self, fg=CH_BLUE, bg=CH_BROWN, text="90", font=("Arial", 40, "bold"))
         self.timer_label.grid(row=2, column=4)
 
         # Add start button

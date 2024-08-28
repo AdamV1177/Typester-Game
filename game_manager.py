@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import END
 from user_interface import CH_BLUE
 from pynput.keyboard import Key
+import json
+import datetime
+from tkinter.messagebox import askyesno
 
 # CONSTANTS
 COUNTDOWN_LEN_S = 90
@@ -117,10 +120,8 @@ class Game:
         # If the countdown has just started, delete the current contents
         # of the textboxes and reset score.
         if count == COUNTDOWN_LEN_S:
-            self.generate_text()
-            self.input_box.delete("1.0", END)
-            self.character_count = 0
-            self.mistakes = 0
+            self.reset()
+            self.start_button.configure(text="Stop Round", command=self.stop_round)
 
         # Add leading zero to single digits
         if count >= 10:
@@ -132,16 +133,22 @@ class Game:
             self.timer = self.frame.after(1000, self.countdown, count - 1)
         else:
             self.frame.after_cancel(self.timer)
-            self.game_end()
+            self.round_end()
 
-    def game_end(self):
+    def round_end(self):
         """
         Function called when the countdown has run out.
-        Shows the game results and leaderboard.
+        Shows the round results and leaderboard.
         """
         # Count the characters and mistakes in the last unfinished sentence
         self.character_count += len(self.input_box.get("1.0", END)) - 1
         self.count_mistakes(self.input_box.get("1.0", END).strip(), self.prompt_box.get("1.0", END).strip())
+
+        # Save the results
+        self.save_result()
+
+        # Reset
+        self.reset()
 
     def count_mistakes(self, entry, prompt):
         """
@@ -150,3 +157,63 @@ class Game:
         for i in range(len(entry)):
             if entry[i] != prompt[i]:
                 self.mistakes += 1
+
+    def reset(self):
+        """
+        Resets the game to a blank slate with a new sentence.
+        """
+        self.generate_text()
+        self.input_box.delete("1.0", END)
+        self.character_count = 0
+        self.mistakes = 0
+
+    def stop_round(self):
+        """
+        Stop the current round and resets timer.
+        Switches the button back to start.
+        """
+        self.reset()
+        self.frame.after_cancel(self.timer)
+        self.countdown_label.configure(text="90")
+        self.start_button.configure(text='Start Timer', command=self.countdown)
+
+    def save_result(self):
+
+        # Count characters per minute and mistake ratio
+        cpm = round(self.character_count/(COUNTDOWN_LEN_S/60), 1)
+        mistake_ratio = int(round(1 / (self.mistakes/self.character_count), 0))
+
+        # Ask user if they want to save the score
+        response = askyesno("Save Score",
+                            message=f"Your score:\n"
+                            f"Characters per minute: {cpm}\n"
+                            f"Mistakes: {self.mistakes}\n"
+                            f"Mistake Ratio: 1 mistake in about every {mistake_ratio} characters.\n\n"
+                            f"Do you want to save this score?")
+
+        # If user wants to save score
+        if response:
+
+            # Create dictionary with the new score to add
+            new_score = {
+                "date": datetime.datetime.now().strftime("%d/%m/%Y"),
+                "cpm": cpm,
+                "mistakes": self.mistakes,
+                "MR": mistake_ratio
+            }
+
+            # Write into a json file (handle missing or empty file errors)
+            try:
+                with open("scoreboard.json", "r") as file:
+                    data = json.load(file)
+            except FileNotFoundError:
+                with open("scoreboard.json", "w") as file:
+                    json.dump(new_score, file, indent=4)
+            except json.decoder.JSONDecodeError:
+                with open("scoreboard.json", "w") as file:
+                    json.dump(new_score, file, indent=4)
+            else:
+                data.update(new_score)
+
+                with open("scoreboard.json", "w") as file:
+                    json.dump(data, file, indent=4)
